@@ -1,19 +1,29 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { useTheme } from "../context/ThemeContext";
-import axios from "axios";
-import Image from "next/image";
-import { Sun, Moon } from "lucide-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import dynamic from "next/dynamic";
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useTheme } from '../context/ThemeContext';
+import axios from 'axios';
+import Image from 'next/image';
+import { Sun, Moon } from 'lucide-react';
+import {
+  WalletMultiButton,
+  WalletDisconnectButton,
+} from '@solana/wallet-adapter-react-ui';
+import dynamic from 'next/dynamic';
 
 // Dynamically load WalletMultiButton to ensure it is only rendered on the client side
 const DynamicWalletMultiButton = dynamic(
   () =>
-    import("@solana/wallet-adapter-react-ui").then(
+    import('@solana/wallet-adapter-react-ui').then(
       (mod) => mod.WalletMultiButton
+    ),
+  { ssr: false }
+);
+const DynamicWalletDisconnectMultiButton = dynamic(
+  () =>
+    import('@solana/wallet-adapter-react-ui').then(
+      (mod) => mod.WalletDisconnectButton
     ),
   { ssr: false }
 );
@@ -23,10 +33,10 @@ const NavBar = () => {
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (token) {
       axios
-        .get("http://localhost:4000/api/userinfo", {
+        .get('http://localhost:4000/api/userinfo', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -41,7 +51,7 @@ const NavBar = () => {
   }, []);
 
   const handleToggleTheme = () => {
-    toggleTheme(theme === "light" ? "dark" : "light");
+    toggleTheme(theme === 'light' ? 'dark' : 'light');
   };
 
   return (
@@ -77,13 +87,14 @@ const NavBar = () => {
             onClick={handleToggleTheme}
             className="bg-black text-white px-2 py-1 rounded flex items-center justify-center"
           >
-            {theme === "light" ? (
+            {theme === 'light' ? (
               <Moon className="w-5 h-5 text-white" />
             ) : (
               <Sun className="w-5 h-5 text-white" />
             )}
           </button>
           <DynamicWalletMultiButton />
+          <DynamicWalletDisconnectMultiButton />
         </div>
       </div>
       <div className="container mx-auto flex justify-between items-center sm:hidden mt-2">

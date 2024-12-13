@@ -1,26 +1,26 @@
 // src/app/discover/closet/page.tsx
 
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   getAssetsByOwner,
   fetchNFTDetails,
   extractGroupAddress,
-} from "@/utils/getAssets";
-import Image from "next/image";
-import Link from "next/link";
-import { FaExternalLinkAlt } from "react-icons/fa";
+} from '@/utils/getAssets';
+import Image from 'next/image';
+import Link from 'next/link';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 import {
   useAnchorWallet,
   useConnection,
   useWallet,
-} from "@solana/wallet-adapter-react";
-import Card from "@/components/Card";
-import Skeleton from "@/components/Skeleton";
-import { getNFTDetail, getNFTList } from "@/utils/nftMarket";
-import { AnchorProvider, Wallet } from "@coral-xyz/anchor";
-import { PublicKey } from "@solana/web3.js";
+} from '@solana/wallet-adapter-react';
+import Card from '@/components/Card';
+import Skeleton from '@/components/Skeleton';
+import { getNFTDetail, getNFTList } from '@/utils/nftMarket';
+import { AnchorProvider, Wallet } from '@coral-xyz/anchor';
+import { PublicKey } from '@solana/web3.js';
 
 export interface NFTDetail {
   name: string;
@@ -31,6 +31,7 @@ export interface NFTDetail {
   seller: string;
   price: string;
   listing: string;
+  collection: string;
 }
 
 const trimAddress = (address: string) =>
@@ -38,42 +39,16 @@ const trimAddress = (address: string) =>
 
 const Closet: React.FC = () => {
   const { publicKey } = useWallet();
-  const [walletAddress, setWalletAddress] = useState<string>("");
+  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [filters, setFilters] = useState({
+    price: '',
+    collection: '',
+  });
   const [assets, setAssets] = useState<NFTDetail[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
-
-  useEffect(() => {
-    const storedWalletAddress = sessionStorage.getItem("walletAddress");
-    const storedAssets = sessionStorage.getItem("assets");
-
-    if (storedWalletAddress) {
-      setWalletAddress(storedWalletAddress);
-    }
-
-    if (storedAssets) {
-      setAssets(JSON.parse(storedAssets));
-    }
-    fetchNFTs();
-  }, []);
-
-  // useEffect(() => {
-  //   fetchAssets();
-  // }, [publicKey]);
-
-  useEffect(() => {
-    fetchNFTs();
-  }, [wallet]);
-
-  useEffect(() => {
-    sessionStorage.setItem("walletAddress", walletAddress);
-  }, [walletAddress]);
-
-  useEffect(() => {
-    sessionStorage.setItem("assets", JSON.stringify(assets));
-  }, [assets]);
 
   const fetchNFTs = async () => {
     setIsLoading(true);
@@ -83,7 +58,6 @@ const Closet: React.FC = () => {
       const listings = await getNFTList(provider, connection);
       // const mint = new PublicKey(listings[0].mint);
       // const detail = await getNFTDetail(mint, connection);
-      console.log(listings);
       const promises = listings
         .filter((list) => list.isActive)
         .map((list) => {
@@ -97,10 +71,16 @@ const Closet: React.FC = () => {
           );
         });
       const detailedListings = await Promise.all(promises);
-      console.log(detailedListings);
-      //return detailedListings;
-
-      setAssets(detailedListings);
+      const hasFilters = filters.price || filters.collection;
+      let finalAssets = hasFilters
+        ? detailedListings.filter(
+            (nftDetail) =>
+              filters.price === nftDetail.price ||
+              filters.collection === nftDetail.collection ||
+              filters.price === nftDetail.price
+          )
+        : detailedListings;
+      setAssets(finalAssets);
     } catch (errr) {
       console.log(errr);
     } finally {
@@ -108,8 +88,65 @@ const Closet: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const storedWalletAddress = sessionStorage.getItem('walletAddress');
+    const storedAssets = sessionStorage.getItem('assets');
+
+    if (storedWalletAddress) {
+      setWalletAddress(storedWalletAddress);
+    }
+
+    if (storedAssets) {
+      setAssets(JSON.parse(storedAssets));
+    }
+    fetchNFTs();
+  }, []);
+
+  useEffect(() => {
+    fetchNFTs();
+  }, [wallet]);
+
+  useEffect(() => {
+    sessionStorage.setItem('walletAddress', walletAddress);
+  }, [walletAddress]);
+
+  useEffect(() => {
+    sessionStorage.setItem('assets', JSON.stringify(assets));
+  }, [assets]);
+
   return (
     <div className="p-4 pt-20 bg-white dark:bg-black min-h-screen">
+      <div className="flex flex-row items-center justify-evenly mb-12">
+        <div className="flex flex-row items-center">
+          <input
+            type="text"
+            value={filters.price}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, price: e.target.value }))
+            }
+            placeholder="Price"
+            className="border border-gray-300 p-2 rounded w-1/2 bg-white dark:bg-black dark:text-gray-200 mr-8"
+          />
+          <input
+            type="text"
+            value={filters.collection}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, collection: e.target.value }))
+            }
+            placeholder="Collection"
+            className="border border-gray-300 p-2 rounded w-1/2 bg-white dark:bg-black dark:text-gray-200 mr-8"
+          />
+          <button
+            onClick={fetchNFTs}
+            disabled={isLoading}
+            className={`ml-2 p-2 rounded w-full ${
+              isLoading ? 'bg-gray-300' : 'bg-blue-500 text-white'
+            }`}
+          >
+            {isLoading ? 'Loading...' : 'Filter NFTs'}
+          </button>
+        </div>
+      </div>
       <h1 className="text-3xl font-bold mb-4 text-center text-black dark:text-white">
         NFTs on sale
       </h1>
@@ -149,13 +186,13 @@ const Closet: React.FC = () => {
                 </div>
               </Link>
               <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-0 group-hover:bg-opacity-70 transition-opacity flex flex-col justify-end items-center opacity-0 group-hover:opacity-100 text-white text-xs p-2">
-                <p className="font-semibold">{asset.name || "Unknown"}</p>
+                <p className="font-semibold">{asset.name || 'Unknown'}</p>
                 <Link
                   href={`https://solana.fm/address/${asset.mint}`}
                   target="_blank"
                   className="hover:text-gray-300 flex items-center"
                 >
-                  {trimAddress(asset.mint)}{" "}
+                  {trimAddress(asset.mint)}{' '}
                   <FaExternalLinkAlt className="ml-1" />
                 </Link>
                 {asset.group && (
@@ -164,7 +201,7 @@ const Closet: React.FC = () => {
                     target="_blank"
                     className="hover:text-gray-300 flex items-center"
                   >
-                    Group: {trimAddress(asset.group)}{" "}
+                    Group: {trimAddress(asset.group)}{' '}
                     <FaExternalLinkAlt className="ml-1" />
                   </Link>
                 )}
