@@ -23,7 +23,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  authType: {
+    type: String,
+    required: false,
+  },
+  googleId: {
+    type: String,
+    required: false,
+    unique: true,
+  },
 });
 
 module.exports = mongoose.model('User', userSchema);
-
