@@ -8,7 +8,7 @@ const axios = require("axios");
 
 const connectMongo = require("../src/lib/db.js");
 
-const { registerUser, loginUser } = require("./controllers/authController.js");
+const { registerUser, loginUser, googleLogin } = require("./controllers/authController.js");
 const {
   getUserInfo,
   updateUserInfo,
@@ -64,6 +64,8 @@ connectMongo();
 
 // User registration route
 router.post("/api/register", registerUser);
+// User registration route
+router.post("/api/google", googleLogin);
 // User login route
 router.post("/api/login", loginUser);
 // Fetch user info route
