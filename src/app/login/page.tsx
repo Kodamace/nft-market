@@ -1,32 +1,32 @@
 //src/app/login/page.tsx
 
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:4000/api/login", {
+      const response = await axios.post('http://localhost:4000/api/login', {
         username,
         password,
       });
       if (response.status === 200) {
         const { token, user } = response.data;
-        localStorage.setItem("token", token);
-        router.push("/dashboard");
+        localStorage.setItem('token', token);
+        router.push('/dashboard');
       }
     } catch (err) {
-      setError("Login failed. Please try again.");
+      setError('Login failed. Please try again.');
     }
   };
 
