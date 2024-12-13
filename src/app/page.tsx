@@ -6,8 +6,21 @@ import { Fragment } from 'react';
 import { useGoogleLogin } from '@/hooks/useGoogleLogin';
 
 const HomePage = () => {
-  const { credential, loggingIn, handleGoogleLogin, handleLoginError } =
-    useGoogleLogin();
+  const {
+    credential,
+    loggingIn,
+    googleScriptLoading,
+    handleGoogleLogin,
+    handleLoginError,
+    setGoogleScriptLoading,
+  } = useGoogleLogin();
+
+  if (googleScriptLoading)
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
@@ -32,9 +45,7 @@ const HomePage = () => {
               Login
             </Link>
             <GoogleOAuthProvider
-              clientId={
-                '504012313829-tuj663nv6ftrhju1q8km6s2fkidqegbn.apps.googleusercontent.com'
-              }
+              clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}
             >
               <GoogleLogin
                 onSuccess={handleGoogleLogin}

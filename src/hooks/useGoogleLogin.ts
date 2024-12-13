@@ -1,11 +1,12 @@
 import axios from 'axios';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export const useGoogleLogin = () => {
   const router = useRouter();
   const [credential, setCredential] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
+  const [googleScriptLoading, setGoogleScriptLoading] = useState(true);
   const handleGoogleLogin = async (credentialResponse: any) => {
     setLoggingIn(true);
     setCredential(credentialResponse.credential);
@@ -33,16 +34,21 @@ export const useGoogleLogin = () => {
   };
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setGoogleScriptLoading(false);
+    }, 2000);
     if (credential) {
       handleGoogleRegisterAndLogin();
     }
-    return () => {};
+    return () => clearTimeout(timer);
   }, [credential]);
 
   return {
     loggingIn,
     credential,
+    googleScriptLoading,
     handleGoogleLogin,
     handleLoginError,
+    setGoogleScriptLoading,
   };
 };
